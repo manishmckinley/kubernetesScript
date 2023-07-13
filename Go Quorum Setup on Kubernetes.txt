@@ -1,0 +1,38 @@
+
+## Install Kubernetes
+
+1. sudo apt install kubeadm=1.19.7-00 kubelet=1.19.7-00 kubectl=1.19.7-00 kubernetes-cni
+2. sudo swapoff -a
+3. sudo nano /etc/fstab
+4. Inside this file, comment out the /swapfile line by preceeding it with a # symbol. Then, close this file and save the changes.
+5. sudo kubeadm init --pod-network-cidr=10.244.0.0/16 or sudo kubeadm init --config=kubeadmconfig.yaml
+6. mkdir -p $HOME/.kube
+7. sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+8. sudo chown $(id -u):$(id -g) $HOME/.kube/config
+9. kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+10. kubectl get pods --all-namespaces
+11. kubectl taint nodes --all node-role.kubernetes.io/master-
+12. kubectl delete deployment <deployment name>
+
+### Install NFS
+
+12. sudo systemctl status nfs-server
+13. sudo apt install nfs-kernel-server nfs-common portmap
+14. sudo start nfs-server
+15. sudo mkdir -p /srv/nfs/mydata 
+16. sudo chmod -R 777 /srv
+17. sudo vi /etc/exports
+18. Add this line: /srv/nfs/mydata  *(rw,sync,no_subtree_check,no_root_squash,insecure
+19. sudo exportfs -rv
+20. kubectl apply -f rbac.yaml
+21. kubectl apply -f nfs_class.yaml
+22. kubectl apply -f nfs_pod_provision.yaml
+
+### Install qctl
+
+23. GO111MODULE=on go get github.com/ConsenSys/qubernetes/qctl
+export QUBE_CONFIG=$(pwd)/myconfig.yaml
+export QUBE_K8S_DIR=$(pwd)/out
+qctl init --num 4  --consensus raft --cakeshop --monitor
+qctl generate network --create
+qctl deploy network
